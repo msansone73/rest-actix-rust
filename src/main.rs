@@ -34,7 +34,7 @@ async fn hello() -> impl Responder {
 
 //async fn login() -> impl Responder {
 async fn login(rusuario: web::Json<Usuario>) -> impl Responder {
-    println!("/login {}, {}", rusuario.email, rusuario.senha);
+    //println!("/login {}, {}", rusuario.email, rusuario.senha);
 
     let mut usuario: postg::Usuario = Usuario {nome:String::new(), email:String::new(), senha:String::new()};
     
