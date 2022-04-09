@@ -1,18 +1,26 @@
 use core::panic;
+use std::env;
 
 use tokio_postgres::{NoTls, Error, Client};
 use serde::{Serialize, Deserialize};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Usuario {
+    #[serde(default)]
     pub id: i64,
+    #[serde(default)]
     pub nome: String,
     pub email: String,
     pub senha: String,
 }
 
 async fn get_db() -> String {
-    "postgresql://msansone:sansone73@msansone.com.br:5432/sansone-fin".to_string()
+    let key = "Msansone_DB";
+
+    match env::var_os(key) {
+        Some(val) => return val.to_str().unwrap().to_string(),
+        None => panic!("Msansone_DB not found ")
+    }
 }
 
 async fn get_client() -> Client  {
@@ -81,7 +89,6 @@ pub async fn get_usuario(email: String, senha: String) -> Result<Usuario, Error>
 }
 
 pub async fn insert_usuario(usuario: &mut Usuario) -> Result<&Usuario, Error> {
-    println!("insert_usuario... ");
     let mut fetch_usuario= Usuario {id:0,  nome: String::new(), email: String::new(), senha: String::new()};
     
     match get_usuario_by_email(&usuario.email).await {
@@ -90,7 +97,6 @@ pub async fn insert_usuario(usuario: &mut Usuario) -> Result<&Usuario, Error> {
     }
 
     if !fetch_usuario.email.eq(""){
-        println!("Email {} already exists.", fetch_usuario.email);
         return Ok(usuario)
     }
 
@@ -103,38 +109,12 @@ pub async fn insert_usuario(usuario: &mut Usuario) -> Result<&Usuario, Error> {
     let mut id: i64=0;
     match get_usuario_by_email(&usuario.email).await {
         Ok(u) =>{
-            println!("insert_usuario... achei id={}", u.id);
             id=u.id;
         },
         Err(e) =>{println!("Erro {}",e)}
-    }    
-    println!("insert_usuario... id={}",id);
-
+    }   
     usuario.id=id;
 
     Ok(usuario)
-
-}
-
-
-
-pub async fn insert_color(color: &str) -> Result<(), Error>{
-    let str_conn = "postgresql://msansone:sansone73@msansone.com.br:5432/sansone-fin";
-
-    // Connect to the database.
-    let (client, connection) =
-        tokio_postgres::connect(&str_conn, NoTls).await?;
-
-    // The connection object performs the actual communication with the database,
-    // so spawn it off to run on its own.
-    tokio::spawn(async move {
-        if let Err(e) = connection.await {
-            eprintln!("connection error: {}", e);
-        }
-    });
-
-    let _res = client.execute("INSERT INTO color(color_name) VALUES ($1);", &[&color]).await;
-
-    Ok(())
 
 }

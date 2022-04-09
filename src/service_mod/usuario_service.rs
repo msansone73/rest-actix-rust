@@ -11,3 +11,28 @@ pub async fn login_service(email: String, senha:String) -> Usuario {
     }
     usuario    
 } 
+
+pub async fn insere_usuario_srv(usuario: &mut Usuario ) -> Usuario {
+ 
+
+    match postg::insert_usuario(usuario).await {
+        Ok(_u) => {
+            return     Usuario {
+                id: _u.id,
+                nome: _u.nome.to_string(),
+                email: _u.email.to_string(),
+                senha: _u.senha.to_string(),
+            }
+        },
+        Err(e) =>{ 
+            println!("insere_usuario erro: {} ", e);
+            return     Usuario {
+                id: 0,
+                nome: usuario.nome.to_string(),
+                email: usuario.email.to_string(),
+                senha: usuario.senha.to_string(),
+            }
+        },
+    }
+
+}
