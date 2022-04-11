@@ -12,10 +12,18 @@ pub async fn login_service(email: String, senha:String) -> Usuario {
     usuario    
 } 
 
-pub async fn insere_usuario_srv(usuario: &mut Usuario ) -> Usuario {
- 
+pub async fn get_by_id(id: i64) -> Usuario {
+    let mut usuario: postg::Usuario = Usuario {id:0, nome:String::new(), email:String::new(), senha:String::new()};
+    
+    match postg::get_by_id(id).await {
+        Ok(u) => {usuario=u},
+        Err(e) => println!("Erro = {}",e),
+    }
+    usuario  
+}
 
-    match postg::insert_usuario(usuario).await {
+pub async fn insere_usuario_srv(usuario: &mut Usuario ) -> Usuario {
+     match postg::insert_usuario(usuario).await {
         Ok(_u) => {
             return     Usuario {
                 id: _u.id,
@@ -34,5 +42,4 @@ pub async fn insere_usuario_srv(usuario: &mut Usuario ) -> Usuario {
             }
         },
     }
-
 }

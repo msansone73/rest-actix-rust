@@ -68,6 +68,28 @@ async fn get_usuario_by_email(email: &String) -> Result<Usuario, Error> {
     }
 }
 
+
+pub async fn get_by_id(id: i64) -> Result<Usuario, Error> {
+
+    let client = get_client().await;
+
+    let rows = client
+        .query("select * from usuario where id =$1;", &[&id])
+        .await?;
+
+    if rows.is_empty() {
+        let usu:Usuario = Usuario {id:0,  nome: String::new(), email: String::new(), senha: String::new()};
+        Ok(usu)            
+    } else {
+        let _id=     rows[0].get::<_, i64>("id");
+        let _nome: &str = rows[0].get("nome");
+        let _email: &str = rows[0].get("email");
+        let _senha: &str = rows[0].get("senha");
+        let usu:Usuario = Usuario {id:_id,  nome: _nome.to_string(), email: _email.to_string(), senha: _senha.to_string()};
+        Ok(usu)
+    }
+}
+
 pub async fn get_usuario(email: String, senha: String) -> Result<Usuario, Error> {
     let client = get_client().await;
 

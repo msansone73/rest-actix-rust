@@ -1,7 +1,9 @@
+use actix_web::web::{Path};
 use actix_web::{HttpServer, App};
 use actix_web::{get, post, web, HttpResponse, Responder};
 use data_access::postg;
-use service_mod::usuario_service::insere_usuario_srv;
+use serde::{Deserialize, Serialize};
+use service_mod::usuario_service::{insere_usuario_srv, self};
 
 use crate::data_access::postg::Usuario;
 use crate::service_mod::usuario_service::login_service;
@@ -22,6 +24,7 @@ async fn main() -> std::io::Result<()> {
             .service(echo)            
             .route("/hey", web::get().to(manual_hello))
             .route("/usuario", web::post().to(insere_usuario))
+            .route("/usuario/{id}", web::get().to(get_by_id))
             .route("/login", web::post().to(login))
     })
     .bind(("0.0.0.0", 8080))?
@@ -37,11 +40,19 @@ async fn hello() -> impl Responder {
 
 async fn login(rusuario: web::Json<Usuario>) -> impl Responder {
     let usuario= login_service(rusuario.email.to_string(), rusuario.senha.to_string()).await;
-    //HttpResponse::Ok().body( format!("{}",usuario.nome))
+    HttpResponse::Ok().body( format!("inserido. {}", serde_json::to_string(&usuario).unwrap()))
+}
+
+async fn get_by_id(info: Path<Info>) -> impl Responder {
+    let id =   info.id.to_string().parse::<i64>().unwrap();
+    println!("get_by_id");
+    println!("{}", id);
+    let usuario= usuario_service::get_by_id(id ).await;
     HttpResponse::Ok().body( format!("inserido. {}", serde_json::to_string(&usuario).unwrap()))
 }
 
 async fn insere_usuario(rusuario: web::Json<Usuario>) -> impl Responder{
+    println!("insere_usuario");
     let mut usuario: postg::Usuario = 
         Usuario {id:0, 
             nome:rusuario.nome.to_string(), 
@@ -64,4 +75,10 @@ async fn echo(req_body: String) -> impl Responder {
 
 async fn manual_hello() -> impl Responder {
     HttpResponse::Ok().body("Hey there!")
+}
+
+
+#[derive(Deserialize, Serialize)]
+struct Info {
+    id: String,
 }
