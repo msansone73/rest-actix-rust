@@ -25,6 +25,7 @@ async fn main() -> std::io::Result<()> {
             .route("/hey", web::get().to(manual_hello))
             .route("/usuario", web::post().to(insere_usuario))
             .route("/usuario/{id}", web::get().to(get_by_id))
+            .route("/usuario", web::get().to(get_all))
             .route("/login", web::post().to(login))
     })
     .bind(("0.0.0.0", 8080))?
@@ -40,6 +41,11 @@ async fn hello() -> impl Responder {
 
 async fn login(rusuario: web::Json<Usuario>) -> impl Responder {
     let usuario= login_service(rusuario.email.to_string(), rusuario.senha.to_string()).await;
+    HttpResponse::Ok().body( format!("inserido. {}", serde_json::to_string(&usuario).unwrap()))
+}
+
+async fn get_all() -> impl Responder {
+    let usuario = usuario_service::get_all().await;
     HttpResponse::Ok().body( format!("inserido. {}", serde_json::to_string(&usuario).unwrap()))
 }
 

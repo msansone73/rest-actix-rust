@@ -12,6 +12,17 @@ pub async fn login_service(email: String, senha:String) -> Usuario {
     usuario    
 } 
 
+pub async fn get_all() -> Vec<Usuario> {
+    
+    let mut lista: Vec<Usuario> = Vec::new();
+
+    match postg::get_all().await {
+        Ok(u) => {lista=u},
+        Err(e) => println!("Erro = {}",e),
+    }
+    lista
+}
+
 pub async fn get_by_id(id: i64) -> Usuario {
     let mut usuario: postg::Usuario = Usuario {id:0, nome:String::new(), email:String::new(), senha:String::new()};
     

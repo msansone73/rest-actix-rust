@@ -69,6 +69,32 @@ async fn get_usuario_by_email(email: &String) -> Result<Usuario, Error> {
 }
 
 
+pub async fn get_all() -> Result<Vec<Usuario>, Error> {
+
+    let client = get_client().await;
+
+    let rows = client
+        .query("select * from usuario", &[])
+        .await?;
+
+    let mut lista :Vec<Usuario> = Vec::new();
+    if rows.is_empty() {
+        Ok(lista)            
+    } else {
+        
+        for r in rows {
+            let usuario = Usuario {
+                id: r.get::<_, i64>("id"),
+                nome: r.get("nome"),
+                email: r.get("email"),
+                senha: r.get("senha")
+            };
+            lista.push(usuario)
+        }
+        Ok(lista)
+    }
+}
+
 pub async fn get_by_id(id: i64) -> Result<Usuario, Error> {
 
     let client = get_client().await;
