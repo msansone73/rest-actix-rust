@@ -45,14 +45,11 @@ async fn login(rusuario: web::Json<Usuario>) -> impl Responder {
 
 async fn get_by_id(info: Path<Info>) -> impl Responder {
     let id =   info.id.to_string().parse::<i64>().unwrap();
-    println!("get_by_id");
-    println!("{}", id);
     let usuario= usuario_service::get_by_id(id ).await;
     HttpResponse::Ok().body( format!("inserido. {}", serde_json::to_string(&usuario).unwrap()))
 }
 
 async fn insere_usuario(rusuario: web::Json<Usuario>) -> impl Responder{
-    println!("insere_usuario");
     let mut usuario: postg::Usuario = 
         Usuario {id:0, 
             nome:rusuario.nome.to_string(), 
